@@ -1,7 +1,0 @@
-default:
-  db:
-    user: !expr Sys.getenv("IBES_DB_USER")
-    password: !expr Sys.getenv("IBES_DB_PASSWORD")
-
-
-    
