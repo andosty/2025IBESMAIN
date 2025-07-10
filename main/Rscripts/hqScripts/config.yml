@@ -1,0 +1,9 @@
+default:
+  db:
+    user: !expr Sys.getenv("DB_USER")
+    password: !expr Sys.getenv("DB_PASSWORD")
+
+
+    
+Add-Content c:\2025IBESMAIN\.Renviron "TEST_VARIABLE_1=my_username"
+Add-Content c:\2025IBESMAIN\.Renviron "TEST_VARIABLE_2=123"
