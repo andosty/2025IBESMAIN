@@ -114,7 +114,7 @@ temp_dir <- "temp/"
 ifelse(dir.exists(file.path(temp_dir)),unlink(temp_dir, recursive = TRUE),"temp_dir Directory Exists")
 ifelse(!dir.exists(file.path(temp_dir)), dir.create(file.path(temp_dir)), "temp_dir Directory Exists")
 
-monReportStataDofile <- "server/doFiles/03. run all monitorRepot Scripts.do"
+monReportStataDofile <- "main/doFiles/03. run all monitorRepot Scripts.do"
 stata(monReportStataDofile)
 
 cat("process complete, please effect your backups")

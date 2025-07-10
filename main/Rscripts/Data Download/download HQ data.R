@@ -345,21 +345,3 @@ write_dta(current_ServerAssignments ,paste0(frame_dir, "interviewer assingment s
 write_dta(QuesDetailsPivot , paste0(frame_dir,"interviewer assingment journal.dta"))
 #---------------------------------------------------------
 
-
-#----------------------------------------------------------------------------------------------
-#   Bench Test some of the long process script, and use the least time consuming function
-#-----------------------------------------------------------------------------------------------
-#### STOP HERE
-# # install.packages("bench")
-# library(bench)
-# times <- bench::mark(
-#   for (i in 1:nrow(ass_50) ) {
-#     assignment_row <- assignments_all_0[i,]
-#     detailsAssignmt <-  susoapi::get_assignment_details( workspace  =sqlSvr$workspace,   id = assignment_row$Id  )
-#     AssignmentDetails_0 <- dplyr::bind_rows(AssignmentDetails_0, detailsAssignmt)
-#     rm(detailsAssignmt)
-#   },
-#   foreachh_assignmentID(x = AssID ,wkspace =sqlSvr$workspace),
-#   iterations =5
-# )
-#-----------------------------------------------------------------------------------------------
