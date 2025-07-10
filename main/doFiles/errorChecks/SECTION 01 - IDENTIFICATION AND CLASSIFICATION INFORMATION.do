@@ -70,7 +70,7 @@ replace `id13a_label' = "No"  if id13a == 2
 
 replace section = "Section 1" if $invalidNewName
 replace error_flag = 1        if $invalidNewName
-replace errorCheck  = cond(missing(id13n), "Missing check", "Invalid description") if $invalidNewName
+replace errorCheck  = cond(missing(id13n), "Missing check", "Invalid discription") if $invalidNewName
 replace errorMessage = ///
   cond(missing(id13n), ///
     "Que. 1.2.0b, New-Name for old-Name Establishment=('" + EstablishmentName + "') cannot be blank if Establishment name change is ('" + `id13a_label' + "')", ///
@@ -137,6 +137,7 @@ save "$error_report\Section01_1.2.1c1.dta", replace
 // restore
 
 
+/*
 *****************************
 * Question C1.2.1c second check
 *****************************
@@ -158,11 +159,11 @@ replace `id13pb_label' = "No"  if id13pb == 2
 
 * 3. Update the invalid condition
 gl invalidNewGPDA ($isAnySector & !missing(id13pb) & id13pb == 1 & ///
-    (missing(id13pc) | (!missing(id13pc) & !ustrregexm(id13pc, "^[a-zA-Z]{2}-[0-9]{3}-[0-9]{3,4}$"))))
+    (missing(id13pc) | (!missing(id13pc) & !ustrregexm(id13pc, "^[a-zA-Z0-9]{2}-[0-9]{3,4}-[0-9]{3,4}$"))))
 	
 replace section = "Section 01" if $invalidNewGPDA
 replace error_flag = 1         if $invalidNewGPDA
-replace errorCheck  = cond(missing(id13pc), "Missing check", "Invalid description") if $invalidNewGPDA
+replace errorCheck  = cond(missing(id13pc), "Missing check", "Invalid discription") if $invalidNewGPDA
 replace errorMessage = ///
     cond(missing(id13pc), ///
      "Que. 1.2.1c, New Digital Address for (" + EstablishmentName + ") cannot be blank if Establishment Digital Addresss change is=('" + `id13pb_label' + "')", ///
@@ -174,6 +175,7 @@ insobs 1
 // drop error_flag
 save "$error_report\Section01_1.2.1c2.dta", replace
 // restore
+*/
 
 
 *******************************
@@ -228,6 +230,7 @@ insobs 1
 save "$error_report\Section01_1.2.2c1.dta", replace
 // restore
 
+/*
 *****************************
 * Question C1.2.2c second check
 *****************************
@@ -267,6 +270,7 @@ insobs 1
 // drop error_flag
 save "$error_report\Section01_1.2.2c2.dta", replace
 // restore
+ */
 
 
 *****************************
@@ -345,6 +349,7 @@ insobs 1
 save "$error_report\Section01_1.2.3b2.dta", replace
 // restore
 
+
 *****************************
 * Question C1.2.3c First check
 *****************************
@@ -354,24 +359,22 @@ use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
 
 gl UnexpectedGhNewTelnumber ($isAnySector & !missing(id14c2) &  id14c2 == 2 & !missing(id14c))
 
+
 * Map numeric values to "Yes"/"No"
 tempvar id14c2_label
 gen `id14c2_label' = ""
 replace `id14c2_label' = "Yes" if id14c2 == 1
 replace `id14c2_label' = "No"  if id14c2 == 2
-
-replace error_flag = 1 if $UnexpectedGhNewTelnumber
-replace section = "Section 01" if $UnexpectedGhNewTelnumber
-replace errorCheck = "Not Expected" if $UnexpectedGhNewTelnumber
 replace errorMessage = "Que.1.2.3c, Ghanaian contact Number for (" + EstablishmentName + ") is not expected if it is not a GH contact ('" ///
- + `id14b_label' + "')"  " if $UnexpectedGhNewTelnumber
-
+ + `id14c2_label' + "')"  if $UnexpectedGhNewTelnumber
+	
 // Save the dataset
 keep if error_flag == 1
 insobs 1
 // drop error_flag
 save "$error_report\Section01_1.2.3c1.dta", replace
 // restore
+
 
 
 *****************************
@@ -385,7 +388,7 @@ gen byte is_missing_gh_number = !missing(id14c2) & id14c2 == 1 & missing(id14c)
 gen str3 contact_prefix = substr(id14c, 1, 3)
 
 *local macro with all valid prefixes to make the code more readable
-local valid_prefixes "020 023 024 025 026 027 028 029 050 053 054 055 056 057 059 031 032 033 034 035 036 037 038 039"
+local valid_prefixes "020 023 024 025 026 027 028 029 050 053 054 055 056 057 059 030 031 032 033 034 035 036 037 038 039"
 
 gen byte is_invalid_prefix = 1 // Initialize the variable first
 
@@ -413,6 +416,7 @@ insobs 1
 // drop error_flag
 save "$error_report\Section01_1.2.3c2.dta", replace
 // restore
+ 
 
 *****************************
 * Question C1.2.3c Third check
@@ -453,8 +457,10 @@ replace error_flag = 1 if $UnexpectedForeignNewTelnumber
 replace section = "Section 1" if $UnexpectedForeignNewTelnumber
 replace errorCheck = "Not Expected" if $UnexpectedForeignNewTelnumber
 replace errorMessage = "Que.1.2.3d, Foreign contact Number for (" + EstablishmentName + ") is not expected if it is a GH conatct ('" ///
- + `id14b_label' + "')" if $UnexpectedForeignNewTelnumber
+ + `id14c2_label' + "')" if $UnexpectedForeignNewTelnumber
 
+  
+ 
 // Save the dataset
 keep if error_flag == 1
 insobs 1
@@ -462,7 +468,7 @@ insobs 1
 save "$error_report\Section01_1.2.3d1.dta", replace
 // restore
 
-*****************************
+/*****************************
 * Question C1.2.3d second check
 *****************************
 * C1.2.3d,  Foreign contact number is not invalid
@@ -494,7 +500,8 @@ replace section = "Section 01" if InvalidForeignNewTelnumber
 replace errorCheck = cond(missing(id14c3), "Missing response", "Invalid Entry - Establishment Contact") if InvalidForeignNewTelnumber
 replace errorMessage = cond(missing(id14c3), ///
     "Que. 1.2.3d, Foreign contact number for (" + EstablishmentName + ") cannot be blank", ///
-    "Que. 1.2.3d, Contact prefix - " + id14c3 + " of " + EstablishmentName + " is related to a network in Ghana which shouldn't be") if InvalidForeignNewTelnumber
+    "Que. 1.2.3d, Contact prefix - (" + id14c3 + ") of (" + EstablishmentName + ") ///
+	"is related to a network in Ghana but indicated not a ghanaian conatct in 1.2.3b") if InvalidForeignNewTelnumber
 
 // Save only error cases
 keep if error_flag == 1
@@ -502,7 +509,7 @@ insobs 1
 // drop error_flag
 save "$error_report\Section01_1.2.3d2.dta", replace
 // restore
-
+*/
 
 /*
 *****************************

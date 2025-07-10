@@ -52,7 +52,7 @@ reshape long s3q1a, i(id) j(varCheck)
 
 * Convert varCheck to Roman numerals for labeling
 toroman varCheck, gen(romanVar) lower
-gen busCha = "Que 1." + romanVar
+gen busCha = "S3q1a." + romanVar
 
 * Error if response does not fall in the range of 1–6
 gl invalidbusratn ($isAnySector & (!inrange(s3q1a, 1, 6) | missing(s3q1a)))
@@ -61,7 +61,7 @@ replace section     = "Section 03" if $invalidbusratn
 replace error_flag  = 1           if $invalidbusratn
 replace errorCheck  = cond(missing(s3q1a), "Missing response", "Invalid selection") if $invalidbusratn
 replace errorMessag = cond(missing(s3q1a), ///
-    busCha + ": Response cannot be blank", ///
+    busCha + ": Response for rating business environment cannot be blank", ///
     busCha + ": Response = '" + string(s3q1a) + "' is not valid (must be between 1–6)") if $invalidbusratn
 
 * Save errors only
@@ -110,7 +110,7 @@ generate id = _n
 reshape long s3q2a, i(id) j(varCheck) 
 
 * Generate variable name for reference
-gen busCha2 = "s3q2a" + string(varCheck)
+gen busCha2 = "S3q2a" + string(varCheck)
 
 * Global to flag invalid responses (not in 1–4 or missing)
 gl invalidbusimp ($isAnySector & (!inrange(s3q2a, 1, 4) | missing(s3q2a)))
@@ -120,7 +120,7 @@ replace section      = "Section 03" if $invalidbusimp
 replace error_flag   = 1           if $invalidbusimp
 replace errorCheck   = cond(missing(s3q2a), "Missing response", "Invalid selection") if $invalidbusimp
 replace errorMessag  = cond(missing(s3q2a), ///
-    "Que." + string(varCheck) + ": Response cannot be blank", ///
+    "S3q2a" + string(varCheck) + ": Response for impression about business environment cannot be blank", ///
     "Que." + string(varCheck) + ": Response = '" + string(s3q2a) + "' is not valid (must be between 1–4)") if $invalidbusimp
 
 * Save the dataset
@@ -141,7 +141,7 @@ replace section     = "Section 03" if $invalidbusperc
 replace error_flag  = 1           if $invalidbusperc
 replace errorCheck  = cond(missing(s3q3), "Missing response", "Invalid selection") if $invalidbusperc
 replace errorMessag = cond(missing(s3q3), ///
-    "Que. 3: Perception of business environment cannot be blank", ///
+    "S3q3: Perception of the Ghanaian business environment cannot be blank", ///
     "Que. 3: Response = '" + string(s3q3) + "' is not valid (must be between 1–4)") if $invalidbusperc
 
 * Save the dataset
@@ -182,8 +182,8 @@ replace section     = "Section 03" if $invalidtechrate
 replace error_flag  = 1           if $invalidtechrate 
 replace errorCheck  = cond(missing(s3q4), "Missing response", "Invalid selection") if $invalidtechrate 
 replace errorMessag = cond(missing(s3q4), ///
-    "Que. 4: Main technology rating cannot be blank", ///
-    "Que. 4: Response = '" + string(s3q4) + "' is not valid (must be between 1–3)") if $invalidtechrate 
+    "S3q4: Main technology rating cannot be blank", ///
+    "S3q4: Response = '" + string(s3q4) + "' is not valid (must be between 1–3)") if $invalidtechrate 
 
 // Save the dataset
 keep if error_flag == 1
@@ -205,7 +205,7 @@ reshape long s3q5a, i(interview__key interview__id id00 Sub_Sector Establishment
 
 * Convert varCheck to Roman numerals for question labels
 toroman varCheck, gen(romanVar) lower
-gen fcRate = "Que 5." + romanVar
+gen fcRate = "S3q5a." + romanVar
 
 * Flag invalid responses (outside 1–4 or missing)
 gl invalidfcrate ($isAnySector & (!inrange(s3q5a, 1, 4) | missing(s3q5a)))
@@ -235,8 +235,8 @@ replace section     = "Section 03" if $invalidcompImp
 replace error_flag  = 1           if $invalidcompImp
 replace errorCheck  = cond(missing(s3q6), "Missing response", "Invalid selection") if $invalidcompImp
 replace errorMessag = cond(missing(s3q6), ///
-    "Que. 6: Impression about business competition cannot be blank", ///
-    "Que. 6: Response = '" + string(s3q6) + "' is not valid (must be between 1–4)") if $invalidcompImp
+    "S3q6: Impression about business competition cannot be blank", ///
+    "S3q6: Response = '" + string(s3q6) + "' is not valid (must be between 1–4)") if $invalidcompImp
 
 // Save the dataset
 keep if error_flag == 1
@@ -262,8 +262,8 @@ replace section = "Section 03" if $invalidAfCF
 replace error_flag = 1 if $invalidAfCF
 replace errorCheck = cond(missing(s3q7), "Missing response", "Invalid selection") if $invalidAfCF
 replace errorMessag = cond(missing(s3q7), ///
-    "Que. 7: Awareness of AfCFTA cannot be blank", ///
-    "Que. 7: Response = '" + string(s3q7) + "' is not valid (must be between 1–2)") if $invalidAfCF
+    "S3q7: Awareness of AfCFTA cannot be blank", ///
+    "S3q7: Response = '" + string(s3q7) + "' is not valid (must be between 1–2)") if $invalidAfCF
 
 //save the dataset
 keep if error_flag == 1
@@ -275,20 +275,20 @@ save "$error_report\Section3_Q7_AfCFinvalid.dta", replace
 **************************
 *Question 8, first check 
 **************************
-use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
-
-gl unexpectedAbimp ($isAnySector & s3q7 != 1 & inrange(s3q8,1,5) )
-
-replace section = "Section 03" if $unexpectedAbimp
-replace error_flag = 1 if $unexpectedAbimp
-replace errorCheck = "response not expected"  if $unexpectedAbimp
-replace errorMessag = "Que. 8: Response not expected — respondent did not indicate being aware of AfCFTA (Q7 is not yes)" if $unexpectedAbimp
-
-//save the dataset
-keep if error_flag == 1
-insobs 1
-drop error_flag
-save "$error_report\Section3_Q8_unexpectedAbimp.dta", replace
+// use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+//
+// gl unexpectedAbimp ($isAnySector & inrange(s3q8,1,5) )
+//
+// replace section = "Section 03" if $unexpectedAbimp
+// replace error_flag = 1 if $unexpectedAbimp
+// replace errorCheck = "response not expected"  if $unexpectedAbimp
+// replace errorMessag = "S3q8: Response not expected — respondent did not indicate being aware of AfCFTA (Q7 is not yes)" if $unexpectedAbimp
+//
+// //save the dataset
+// keep if error_flag == 1
+// insobs 1
+// drop error_flag
+// save "$error_report\Section3_Q8_unexpectedAbimp.dta", replace
 
 
 **************************
@@ -296,12 +296,12 @@ save "$error_report\Section3_Q8_unexpectedAbimp.dta", replace
 **************************
 use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
 
-gl invalidAbimp ($isAnySector & s3q7 == 1 & (!inrange(s3q8, 1,5)|(missing(s3q8))))
+gl invalidAbimp ($isAnySector & (!inrange(s3q8, 1,5)|(missing(s3q8))))
 
 replace section = "Section 03" if $invalidAbimp
 replace error_flag = 1 if $invalidAbimp
-replace errorCheck = "invalid response"  if $invalidAbimp
-replace errorMessag = "	Que. 8, perception of ability of companies (AfCFTA) cannot be blank" if $invalidAbimp
+replace errorCheck = "Missing response"  if $invalidAbimp
+replace errorMessag = "S3q8, perception of ability of companies (AfCFTA) cannot be blank" if $invalidAbimp
 
 //save the dataset
 keep if error_flag == 1
@@ -312,51 +312,62 @@ save "$error_report\Section3_Q8_Abimpinvalid.dta", replace
 **************************
 *Question 9, first check 
 **************************
-// aftac trade
-use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
-egen rankTotal = rowtotal(s3q9_*)
-
-gl unexpectedbusPos ($isAnySector & s3q7!=1  & rankTotal == 15)  //|
-        //!missing(s3q9o)))
-
-replace section = "Section 03" if $unexpectedbusPos
-replace error_flag = 1 if $unexpectedbusPos
-replace errorCheck = "response not expected"  if $unexpectedbusPos
-replace errorMessag = "Que. 9: Response was not expected since 's3q7' was not selected as 1 (Yes)" if $unexpectedbusPos
-
-//save the dataset
-keep if error_flag == 1
-insobs 1
-drop error_flag
-save "$error_report\Section3_Q9_unexpectedbusPos.dta", replace
+// // aftac trade
+// use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+// egen rankTotal = rowtotal(s3q9_*)
+//
+// gl unexpectedbusPos ($isAnySector & s3q7!=1  & rankTotal == 15)  //|
+//         //!missing(s3q9o)))
+//
+// replace section = "Section 03" if $unexpectedbusPos
+// replace error_flag = 1 if $unexpectedbusPos
+// replace errorCheck = "response not expected"  if $unexpectedbusPos
+// replace errorMessag = "Que. 9: Response was not expected since 's3q7' was not selected as 1 (Yes)" if $unexpectedbusPos
+//
+// //save the dataset
+// keep if error_flag == 1
+// insobs 1
+// drop error_flag
+// save "$error_report\Section3_Q9_unexpectedbusPos.dta", replace
 
 //s i got here
 **************************
 *Question 9, second check 
 **************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+
+*generating a variable that gets the no. of rankings i.e 5 rankings
+egen rankTotal = rowtotal(s3q9_*)
+
+gl invalidbusPos ($isAnySector & (rankTotal != 15 | rankTotal == .)) 
 
 
-// use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
-//
-// *generating a variable that gets the no. of rankings i.e 5 rankings
-// egen rankTotal = rowtotal(s3q9_*)
-//
-// gl invalidbusPos ($isAnySector & s3q7==1  & rankTotal != 15) 
-//
-//
+* Apply the flag to rows failing the check
+replace section     = "Section 03" if $invalidbusPos
+replace error_flag  = 1            if $invalidbusPos
+
+* Specify type of error
+replace errorCheck = cond(rankTotal == ., "Missing response", "Invalid number of rankings") if $invalidbusPos
+
+* Customize error message
+replace errorMessage = cond(rankTotal == ., ///
+  "S3q9: Question is unanswered. Exactly 5 business positioning methods must be selected.", ///
+  "S3q9: Exactly 5 rankings are required for ways you will position your business.") if $invalidbusPos
+
+
 // replace section    = "Section 03" if $invalidbusPos
 // replace error_flag = 1           if $invalidbusPos
-// replace errorCheck  = cond(missing(s3q9), "Missing response", "Invalid selection") if $invalidbusPos
-// replace errorMessage = cond(missing(s3q9), ///
-//   "Que. 9: Top 5 ways to position business cannot be blank", ///
-//   "Que. 9: Selected option is not valid (must be between 1-18)") if $invalidbusPos
-//
-//  
-// //save the dataset
-// keep if error_flag == 1
-// insobs 1
-// drop error_flag
-// save "$error_report\Section3_Q9_busPosinvalid.dta", replace
+// replace errorCheck  = cond(rankTotal==., "Missing response", "Invalid selection") if $invalidbusPos
+// replace errorMessage = cond(rankTotal==., ///
+//   "S3q9: Select top 5 ways to position business cannot be blank", ///
+//   "S3q9: Selected option is not valid (must be between 1-17 or 99)") if $invalidbusPos
+
+ 
+//save the dataset
+keep if error_flag == 1
+insobs 1
+drop error_flag
+save "$error_report\Section3_Q9_busPosinvalid.dta", replace
 
 
 **************************
@@ -365,13 +376,13 @@ save "$error_report\Section3_Q9_unexpectedbusPos.dta", replace
 use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
 
 *generating a global that contains 5 selection 
-gl unexpectedOthspec_q9 ($isAnySector & s3q7 == 1 & !inrange(s3q9__99, 1, 5) & !missing(s3q9o))
+gl unexpectedOthspec_q9 ($isAnySector & !inrange(s3q9__99, 1, 5) & !missing(s3q9o))
 
 
 replace section = "Section 03" if $unexpectedOthspec_q9
 replace error_flag = 1 if $unexpectedOthspec_q9
 replace errorCheck = "not expected response" 
-replace errorMessag = "Que. 9: Response(s) provided when AfCFTA (option 1 in Q7)/option 99 in Q9 was not selected" if $unexpectedOthspec_q9
+replace errorMessag = "S3q9: Response(s) provided when AfCFTA (option 1 in Q7)/option 99 in Q9 was not selected" if $unexpectedOthspec_q9
 
 
 //save the dataset
@@ -459,12 +470,24 @@ save "$error_report\Section3_q9other.dta", replace
 use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
 
 
-gl invalidbusGrowth ($isAnySector & !inlist (s3q10, 1,2)|(missing(s3q10)))
+//gl invalidbusGrowth ($isAnySector & !inlist (s3q10, 1,2)|(missing(s3q10)))
 
-replace section = "Section 03" if $invalidbusGrowth
-replace error_flag = 1 if $invalidbusGrowth
-replace errorCheck = "invalid response"  if $invalidbusGrowth
-replace errorMessag = "	Que. 10, response for perception of business growth is invalid" if $invalidbusGrowth
+* Define condition: any sector selected AND invalid or missing response for s3q10
+gl invalidbusGrowth ($isAnySector & (missing(s3q10) | !inlist(s3q10, 1, 2)))
+
+* Apply error flag and messages
+replace section      = "Section 03" if $invalidbusGrowth
+replace error_flag   = 1            if $invalidbusGrowth
+replace errorCheck   = cond(missing(s3q10), "Missing response", "Invalid response") if $invalidbusGrowth
+replace errorMessage = cond(missing(s3q10), ///
+  "S3q10: Question is unanswered. Select whether business is growing or not.", ///
+  "S3q10: Response for perception of business growth must be either 1 or 2.") if $invalidbusGrowth
+
+
+// replace section = "Section 03" if $invalidbusGrowth
+// replace error_flag = 1 if $invalidbusGrowth
+// replace errorCheck = "Missing response"  if $invalidbusGrowth
+// replace errorMessag = "	S3q10: Response for perception of business growth is invalid" if $invalidbusGrowth
 
 //save the dataset
 keep if error_flag == 1
@@ -492,20 +515,44 @@ save "$error_report\Section3_Q10_busGrowthinvalid.dta", replace
 // save "$error_report\Section3_Q11_unexpectedbusPos.dta", restore
 // */
 //
-// **************************
-// *Question 11, second check 
-// **************************
-// use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
-//
-//
-// egen rankTotal11 = rowtotal(s3q11_*)
-//
+**************************
+*Question 11, second check 
+**************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+
+
+egen rankTotal11 = rowtotal(s3q11_*)
+
+
+* Define condition: any sector selected AND invalid number of rankings (not 5 or missing)
+gl invalidinvestFac ($isAnySector & (rankTotal11 != 15 | rankTotal11 == .))
+
+* Apply the flag to rows failing the check
+replace section      = "Section 03" if $invalidinvestFac
+replace error_flag   = 1            if $invalidinvestFac
+
+* Specify type of error
+replace errorCheck = cond(rankTotal11 == ., "Missing response", "Invalid number of rankings") if $invalidinvestFac
+
+* Customize error message
+replace errorMessage = cond(rankTotal11 == ., ///
+  "S3q11: Question is unanswered. Exactly 5 investment factors must be selected.", ///
+  "S3q11: Exactly 5 rankings are required for  investment factors.") if $invalidinvestFac
+
+* Save the dataset with errors only
+keep if error_flag == 1
+insobs 1
+drop error_flag
+save "$error_report\Section3_Q11_investFacinvalid.dta", replace
+
+
+
 // gl invalidinvestFac ($isAnySector & rankTotal11 !=15)
 //
 // replace section = "Section 03" if $invalidinvestFac
 // replace error_flag = 1 if $invalidinvestFac
 // replace errorCheck = "invalid response"  if $invalidinvestFac
-// replace errorMessag = "	Que. 11, response for top 5 invest factors is invalid" if $invalidinvestFac
+// replace errorMessag = "	S3q11, response for top 5 invest factors is invalid" if $invalidinvestFac
 //
 // //save the dataset
 // keep if error_flag == 1

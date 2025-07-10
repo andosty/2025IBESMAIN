@@ -40,25 +40,25 @@ do "$do_file_errorSectionChecks_loc\SECTION 02 - EMPLOYMENT AND EARNINGS.do"
 *****************************************************
 do "$do_file_errorSectionChecks_loc\SECTION 03 - BUSINESS CHALLENGES AND OPPORTUNITIES.do" 
 
-// Calculate progress percentage
-    local progress = 30
-    // Write progress to a file
-    file open progfile using "$tempsaveDir\progress.txt", write text replace
-    file write progfile "`progress'"
-	file close progfile
+// // Calculate progress percentage
+//     local progress = 30
+//     // Write progress to a file
+//     file open progfile using "$tempsaveDir\progress.txt", write text replace
+//     file write progfile "`progress'"
+// 	file close progfile
 * SECTION 05 : STOCKS  *
 *****************************************************
-do "$do_file_errorSectionChecks_loc\SECTION 05 - STOCKS.do" 
+//do "$do_file_errorSectionChecks_loc\SECTION 05 - STOCKS.do" 
 
 
 * SECTION 06 : FIXED CAPITAL FORMATION  *
 *****************************************************
-// do "$do_file_errorSectionChecks_loc\SECTION 06 - FIXED CAPITAL FORMATION.do" 
+do "$do_file_errorSectionChecks_loc\SECTION 06 - FIXED CAPITAL FORMATION.do" 
 
 
 * SECTION 07 : INPUT COSTS *
 *****************************************************
-//do "$do_file_errorSectionChecks_loc\SECTION 07 - INPUT COSTS.do"
+do "$do_file_errorSectionChecks_loc\SECTION 07 - INPUT COSTS.do"
 
 // Calculate progress percentage
  /*   local progress = 50
@@ -69,7 +69,7 @@ do "$do_file_errorSectionChecks_loc\SECTION 05 - STOCKS.do"
 
 * SECTION 09 : PRODUCT INNOVATION *
 *****************************************************
-// do "$do_file_errorSectionChecks_loc\SECTION 09 - PRODUCT INNOVATION.do"
+do "$do_file_errorSectionChecks_loc\SECTION 09 - PRODUCT INNOVATION.do"
 //
 //
 // * SECTION 10: PROCESS INNOVATION *

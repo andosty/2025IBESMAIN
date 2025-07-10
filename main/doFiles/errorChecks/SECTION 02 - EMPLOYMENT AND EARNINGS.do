@@ -597,7 +597,7 @@ local inconsistentCond !missing(s2r1q1_persons_engaged_total) & ///
 replace section = "Section 02" if `inconsistentCond'
 replace error_flag = 1 if `inconsistentCond'
 replace errorCheck = "Sum Check (Persons Engaged)" if `inconsistentCond'
-replace errorMessage = "S2Q1 Sum Error: Total Persons Engaged = " + string(s2r1q1_persons_engaged_total) + " does not match the sum of its components (Employees = " + string(s2r1q1_employee_total) + ", Unpaid Workers = " + string(s2r1q1_unpaid_workers_total) + ", National Service = " + string(s2r1q1_national_service_total) + "). Expected sum = " + string(expected_persons_total) + ". Please verify counts." if `inconsistentCond'
+replace errorMessage = "S2Q1.4 Sum Error: Total Persons Engaged = " + string(s2r1q1_persons_engaged_total) + " does not match the sum of its components (Employees = " + string(s2r1q1_employee_total) + ", Unpaid Workers = " + string(s2r1q1_unpaid_workers_total) + ", National Service = " + string(s2r1q1_national_service_total) + "). Expected sum = " + string(expected_persons_total) + ". Please verify counts." if `inconsistentCond'
 
 * Save errors
 keep if error_flag == 1
@@ -659,7 +659,7 @@ local inconsistentSupplementsCond !missing(s2q44f) & ///
 replace section = "Section 02" if `inconsistentSupplementsCond'
 replace error_flag = 1 if `inconsistentSupplementsCond'
 replace errorCheck = "Sum Check (Supplements)" if `inconsistentSupplementsCond'
-replace errorMessage = "S2Q3 Sum Error: Total Supplements = " + string(s2q44f) + " does not match the sum of its components (Social Security, Health Ins, Pension, etc.). Expected sum = " + string(expected_supplements) + ". Difference = " + string(s2q44f - expected_supplements) + ". Please verify payments." if `inconsistentSupplementsCond'
+replace errorMessage = "S2Q3.8 Sum Error: Total Supplements = " + string(s2q44f) + " does not match the sum of its components (Social Security, Health Ins, Pension, etc.). Expected sum = " + string(expected_supplements) + ". Difference = " + string(s2q44f - expected_supplements) + ". Please verify payments." if `inconsistentSupplementsCond'
 
 * Save errors
 keep if error_flag == 1
@@ -772,7 +772,7 @@ gl zeroPayPositiveComponents ($isAnySector & !missing(s2q36f) & s2q36f == 0 & po
 replace section = "Section 02" if $zeroPayPositiveComponents
 replace error_flag = 1 if $zeroPayPositiveComponents
 replace errorCheck = "Logical Consistency (Zero Pay, Pos Supplements)" if $zeroPayPositiveComponents
-replace errorMessage = "S2Q2/S2Q3.1-7 Logic Error: Total Wages and Salaries = 0, but the sum of positive supplement components (Social Security, Health Ins, etc.) = " + string(positive_supplements_sum) + ". If supplements were paid, Total Wages should likely be positive. Please verify." if $zeroPayPositiveComponents
+replace errorMessage = "S2Q2.5/S2Q3.1-7 Logic Error: Total Wages and Salaries = 0, but the sum of positive supplement components (Social Security, Health Ins, etc.) = " + string(positive_supplements_sum) + ". If supplements were paid, Total Wages should likely be positive. Please verify." if $zeroPayPositiveComponents
 
 //save the dataset
 keep if error_flag == 1
@@ -1211,5 +1211,4 @@ keep if error_flag == 1
 insobs 1
 drop error_flag
 save "$error_report\Section2_service_high_operatives.dta", replace
-
 

@@ -1,7 +1,87 @@
+/*==================================
+* SECTION 0: COVER
+*==================================
+*Sec 0.EnumeratorName, invalid Enumerator Name.
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+// preserve
+
+gl invalidEnumName (missing(EnumeratorName) |(!missing(EnumeratorName) & wordcount(EnumeratorName) < 2))
+
+replace section = "Section 0A" if $invalidEnumName
+replace error_flag = 1         if $invalidEnumName
+replace errorCheck  = cond(missing(EnumeratorName), "Missing check", "Full name Check") if $invalidEnumName
+// replace errorMessage = ///
+replace errorMessage = cond(missing(EnumeratorName), ///
+   "Que. Enum Name, The (" + EstablishmentName + ") contact person cannot be blank", ///
+    "Que. Enum Name, provide your full name of name as enumerator. This (" + EnumeratorName + ") is invalid") if $invalidEnumName
+	
+// Save the dataset
+keep if error_flag == 1
+insobs 1
+// drop error_flag
+save "$error_report\Section0_EnumeratorName.dta", replace
+// restore
+
+
+*Sec 0.EnumContact, invalid Enumerator Contact number.
+***************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+
+gen byte is_missing_gh_number = missing(EnumContact) 
+
+gen str3 contact_prefix = substr(id14c, 1, 3)
+
+*local macro with all valid prefixes to make the code more readable
+local valid_prefixes "020 023 024 025 026 027 028 029 050 053 054 055 056 057 059 031 032 033 034 035 036 037 038 039"
+
+gen byte is_invalid_prefix = 1 // Initialize the variable first
+
+
+* valid prefixes
+foreach prefix of local valid_prefixes {
+    replace is_invalid_prefix = 0 if contact_prefix == "`prefix'"
+}
+
+gen byte is_invalid_gh_number = !missing(EnumContact) & is_invalid_prefix
+
+gen byte InvalidEnumTelnumber = is_missing_gh_number | is_invalid_gh_number
+gl InvalidEnumTelnumber "InvalidEnumTelnumber"
+
+replace error_flag = 1 if $InvalidEnumTelnumber
+replace section = "Section 0" if $InvalidEnumTelnumber
+replace errorCheck = cond(missing(EnumContact), "Missing check", "Invalid Entry - Establishment Contact") if $InvalidEnumTelnumber
+replace errorMessage = cond(missing(EnumContact), ///
+    "Que. Enum contact, Ghanaian contact number for (" + EstablishmentName + ") cannot be blank", ///
+    "Que. contact, Contact prefix - " + EnumContact + " of " + EstablishmentName + " not related to any network in Ghana") if $InvalidEnumTelnumber
+
+//Save data set
+keep if error_flag == 1
+insobs 1
+// drop error_flag
+save "$error_report\Section0_EnumContacta.dta", replace
+// restore
+
+*Sec 0.EnumContact, Enumerator's contact number (contact number length) checks
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+// preserve
+
+gl InvalidlengthEnumContact (!missing(EnumContact) & (strlen(EnumContact) < 10 | strlen(EnumContact) > 10))
+replace error_flag = 1 if $InvalidlengthEnumContact
+replace section = "Section 01" if $InvalidlengthEnumContact
+replace errorCheck = "invalid Gh contact length" if $InvalidlengthEnumContact
+replace errorMessage = "Que. Enum contact, contact length (" + (EnumContact) + ") of enumerator needs to be checked" if $InvalidlengthEnumContact
+	
+// Save the dataset
+keep if error_flag == 1
+insobs 1
+// drop error_flag
+save "$error_report\Section0_EnumContactb.dta", replace
+// restore
+*/
+
 *==================================
 * SECTION 0A: INTERVIEW COVERPAGE 
 *==================================
-
 
 ************************
 *Question 9a first check

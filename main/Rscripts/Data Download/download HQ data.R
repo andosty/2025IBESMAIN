@@ -9,6 +9,7 @@ if(!require(openxlsx)) install.packages('openxlsx')
 if(!require(fs)) install.packages('fs')
 if(!require(parallel)) install.packages("parallel")
 if(!require(doParallel)) install.packages("doParallel")
+if(!require(lubridate)) install.packages("lubridate")
 
 library(SurveySolutionsAPI)
 library(susoapi)
@@ -18,6 +19,7 @@ library(RStata)
 library(haven)
 library(dplyr)
 library(readr)
+library(lubridate)
 library(stringr)
 
 assignmentStartDate <- as.character(read_file("notepads/assignmentDate.txt"))
@@ -62,12 +64,8 @@ source("main/Rscripts/Data Download/getQuestionList.R", local = T)
 # CREATE TIME OF DOWNLOAD
 #---------------------------------------------------------------------------
 
-library(lubridate)
-dataDownloadStarted <- format(now(), "%a %d %b %Y, %I:%M %p")
-currentDateTime = Sys.time()
 
-currentDate = as.Date(currentDateTime)
-currentHourMinute = format(as.POSIXct(currentDateTime), format = "%H-%M%p")
+dataDownloadtTime <- format(now(), "%Y-%m-%d, %I %M %p")
 #----------------------------------------------------------------------------
 
 
@@ -332,6 +330,12 @@ current_ServerAssignments <- QuesDetailsPivot %>%
   relocate(-ResponsibleId) %>%
   arrange(Regioncode, Districtcode, TeamNumber, EnumeratorName)
 
+current_ServerAssignments <- current_ServerAssignments %>% 
+  left_join( select(QuesDetailsPivot, ResponsibleName, SupervisorName,SupervisorContact ),by = join_by(ResponsibleName)) %>%
+  relocate(SupervisorName,SupervisorContact, .after = TeamNumber) %>%
+  relocate(Districtcode, .after =District ) %>%
+  arrange(Regioncode, Districtcode,TeamNumber,SupervisorName, EnumeratorName )
+
 
 #save assignment from server frame to stata file
 library(haven)
@@ -341,3 +345,21 @@ write_dta(current_ServerAssignments ,paste0(frame_dir, "interviewer assingment s
 write_dta(QuesDetailsPivot , paste0(frame_dir,"interviewer assingment journal.dta"))
 #---------------------------------------------------------
 
+
+#----------------------------------------------------------------------------------------------
+#   Bench Test some of the long process script, and use the least time consuming function
+#-----------------------------------------------------------------------------------------------
+#### STOP HERE
+# # install.packages("bench")
+# library(bench)
+# times <- bench::mark(
+#   for (i in 1:nrow(ass_50) ) {
+#     assignment_row <- assignments_all_0[i,]
+#     detailsAssignmt <-  susoapi::get_assignment_details( workspace  =sqlSvr$workspace,   id = assignment_row$Id  )
+#     AssignmentDetails_0 <- dplyr::bind_rows(AssignmentDetails_0, detailsAssignmt)
+#     rm(detailsAssignmt)
+#   },
+#   foreachh_assignmentID(x = AssID ,wkspace =sqlSvr$workspace),
+#   iterations =5
+# )
+#-----------------------------------------------------------------------------------------------

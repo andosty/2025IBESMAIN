@@ -1,21 +1,21 @@
-cd "C:\2025IBESMAIN"
 gl rootDir "C:\2025IBESMAIN"
+
 gl prepData "$rootDir\Data\prep\dateTime and Dups"
 gl sectionData "$rootDir\Data\prep\sectionData"
 
-gl do_file_loc "$rootDir\server\doFiles"
+gl do_file_loc "$rootDir\main\doFiles"
 gl tempsaveDir "$rootDir\temp"
 
 gl report_dir "$rootDir\Reports"
 gl monitor_report_dir "$report_dir\monitorReports"
-gl dist_monitor_report_dir "$monitor_report_dir\districts"
-
-gl prepData "C:\2025IBESMAIN\Data\prep\dateTime and Dups"
-gl sectionData "C:\2025IBESMAIN\Data\prep\sectionData"
+gl excel_monitor_report_dir "$monitor_report_dir\excel"
+gl stata_monitor_report_dir "$monitor_report_dir\stata"
 
 //create monitor report dir if it does not exist
 capture mkdir $report_dir
 capture mkdir $monitor_report_dir
+capture mkdir $excel_monitor_report_dir
+capture mkdir $stata_monitor_report_dir
 
 // Calculate progress percentage
 local progress = 5
@@ -27,7 +27,7 @@ file close progfile
 ***************************************************
 ***************************************************
 *FRAME 
-use "$rootDir\server\frame\interviewer assingment frame.dta" , clear
+use "$rootDir\main\frame\interviewer assingment status.dta" , clear
 destring Regioncode Districtcode, replace
 // encode region codes
 gen region=.
@@ -51,11 +51,12 @@ tab region,m
 lab def region 1"Western" 2 "Central" 3"Greater Accra" 4"Volta" 5"Eastern" 6"Ashanti"  7"Western North" 8"Ahafo" 9"Bono" 10"Bono East" 11"Oti"  12"Northern" 13"Savannah" 14"North East" 15 "Upper East" 16"Upper West"
 lab val region region
 tab region,m 
-drop Region Role supLoginId SupervisorId ResponsibleName AssignmentId InterviewTransactions_Count Regioncode Districtcode QuestionnaireVersion interviewerCreationDate
+drop Region    ResponsibleName   Regioncode Districtcode  
 *
-renvars region TeamNumber EnumeratorContact EnumeratorName SupervisorName SupervisorContact assignmentCreated_count assignment_receivedByTablet assignemntQtySumTotal InterviewId / Region Team InterPhone InterName SuperName SuperPhone AssignCount AssignReceived TotalEst interview__id
+
+renvars region  TeamNumber  SupervisorName  SupervisorContact  assignmentQty_receivedByTablet assignemntQtySumTotal /  Region Team SuperName SuperPhone AssignReceived TotalEst 
 *
-gen AssignNotReceived = AssignCount - AssignReceived
+gen AssignCasesReceived = TotalEst - AssignReceived
 *
 sort Team
 order Region Team
@@ -71,7 +72,7 @@ file close progfile
 * Establishment Assignment stats
 ************************************
 // Get establishment from frame status
-use "$rootDir\server\frame\interviewer assingment journal.dta", clear
+use "$rootDir\main\frame\interviewer assingment journal.dta", clear
 destring Regioncode Districtcode, replace
 // encode region codes
 gen region=.
@@ -128,9 +129,9 @@ replace business_sector_listing=8 if Subsectorofbusiness=="WHOLESALE AND RETAIL 
 lab val business_sector_listing s1qso2
 * 
 drop Subsectorofbusiness ResponsibleName AssignmentId QuestionnaireId ErrorsCount Status
-order Region regionCode District districtCode Team SupervisorName SupervisorContact EnumeratorName EnumeratorContact System NameofEstablishment business_sector_listing
+order Region regionCode District districtCode Team SupervisorName SupervisorContact EnumeratorName EnumeratorContact EstablishmentReferenceNumber NameofEstablishment business_sector_listing
 *
-renvars System business_sector_listing / id00 bus_sec_listing
+renvars EstablishmentReferenceNumber business_sector_listing / id00 bus_sec_listing
 *
 sort Region districtCode Team SupervisorName EnumeratorName
 // tab ques_Status ReceivedByDevice  * further analysis
@@ -161,7 +162,7 @@ save "$tempsaveDir\intvwrExpectedRosterStats" , replace
 * get invalid date cases
 use  "$prepData\ibes_ii Estabs wrong_dateCase_only.dta", clear
 // 	destring regCode District, replace	
-keep  Region regCode District distCode DistrictTypeCode Sub_MetroCode EZ EA_num Estab_number StreetName Suburb ExactLocation Town Team  interview__key interview__id id00 EstablishmentName Sub_Sector Supervisor SupervisorContact EnumeratorName EnumContact qtype interview__status surveyStartDate todaySystemDate interview_date interview_date_num gps_date gps_date_num date_within_surveyPeriod
+keep  Region regCode District distCode   EZ  Estab_number StreetName Suburb ExactLocation Town Team  interview__key interview__id id00 EstablishmentName Sub_Sector Supervisor SupervisorContact EnumeratorName EnumContact qtype interview__status surveyStartDate todaySystemDate interview_date interview_date_num gps_date gps_date_num date_within_surveyPeriod
 if _N > 0 {
 gen prepIssue = "invalid date"
 generate prepError = "surveyStartDate ='"+surveyStartDate+"' but either GPS_Date ='" + gps_date+ "' or interveiwStart_Date ='" +interview_date+ "' is invalid"
@@ -177,7 +178,7 @@ save "$tempsaveDir\prepError1" , replace
 * get duplicating cases
 use "$prepData\ibes_ii Estabs_duplicating_only.dta", clear
 *	
-keep Region regCode District distCode DistrictTypeCode Sub_MetroCode EZ EA_num Estab_number StreetName Suburb ExactLocation Town Team  interview__key interview__id id00 EstablishmentName Sub_Sector Supervisor SupervisorContact EnumeratorName EnumContact qtype interview__status dups0
+keep Region regCode District distCode   EZ  Estab_number StreetName Suburb ExactLocation Town Team  interview__key interview__id id00 EstablishmentName Sub_Sector Supervisor SupervisorContact EnumeratorName EnumContact qtype interview__status dups0
 
 if _N > 0 {
 gen prepIssue = "duplicate"
@@ -264,10 +265,11 @@ DiffEst PercNS prep_delete_count- percent_HQ_Approved SuperName SuperPhone
 save "$tempsaveDir\enumstats.dta",replace
 *
 loc date: display %tcCCYYNNDD!-HHMM clock("`c(current_date)'`c(current_time)'", "DMYhms")
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("enumstats") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("enumstats") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("enumstats") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("enumstats") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
-
+// #save stata one file
+save "$stata_monitor_report_dir\enumstats.dta",replace
 
 **************************************
 **************************************
@@ -284,10 +286,10 @@ sort Team
 order Region District Team SuperName SuperPhone ExpEst IntEst DiffEst PercNS ///
 prep_delete_count- percent_HQ_Approved 
 save "$tempsaveDir\teamstats.dta",replace
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("teamstats") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("teamstats") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("teamstats") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("teamstats") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
-
+save "$stata_monitor_report_dir\teamstats.dta",replace
 
 *************************************************
 *************************************************
@@ -298,7 +300,7 @@ destring regionCode districtCode, replace
 keep if prepIssue=="duplicate"
 renvars EnumeratorName Supervisor/ InterName SuperName
 *
-drop regionCode districtCode DistrictTypeCode Sub_MetroCode EZ EA_num  ///
+drop regionCode districtCode   EZ   ///
 StreetName Suburb ExactLocation Town SupervisorContact EnumContact
 *
 sort Team
@@ -307,10 +309,10 @@ prep_DupDeleted prep_InvalidDateDeleted SuperName
 *
 insobs 1
 save "$tempsaveDir\Duplicates.dta",replace
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Duplicates") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Duplicates") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Duplicates") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Duplicates") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
-
+save "$stata_monitor_report_dir\duplicates.dta",replace
 
 *************************************************
 *************************************************
@@ -324,10 +326,10 @@ order Region District Team InterName ExpEst IntEst DiffEst SuperName
 *
 insobs 1
 save "$tempsaveDir\Gaps.dta",replace
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Gaps") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Gaps") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Gaps") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Gaps") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
-
+save "$stata_monitor_report_dir\gaps.dta",replace
 
 *************************************************
 *************************************************
@@ -338,7 +340,7 @@ destring regionCode districtCode, replace
 keep if prepIssue=="invalid date"
 renvars EnumeratorName Supervisor/ InterName SuperName
 *
-drop regionCode districtCode DistrictTypeCode Sub_MetroCode EZ EA_num  ///
+drop regionCode districtCode   EZ   ///
 StreetName Suburb ExactLocation Town SupervisorContact EnumContact
 *
 sort Team
@@ -348,16 +350,11 @@ prep_DupDeleted prep_InvalidDateDeleted SuperName
 *
 insobs 1
 save "$tempsaveDir\InvalidDates.dta",replace
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Invalid Dates") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Invalid Dates") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Invalid Dates") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Invalid Dates") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
+save "$stata_monitor_report_dir\invalid_dates.dta",replace
 
-*
-local progress = 75
-file open progfile using "$tempsaveDir\progress.txt", write text replace
-file write progfile "`progress'"
-file close progfile
-*
 
 *************************************************
 *************************************************
@@ -427,54 +424,55 @@ save "$tempsaveDir\Qtypechange.dta",replace
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==1
 insobs 1
-collapse (sum) AgricExp = estabs_expected AgricInt = estabs_submitted AgricDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) AgricExp = estabs_expected AgricInt = estabs_submitted AgricDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeAgric.dta",replace
 *
+
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==2
 insobs 1
-collapse (sum) MinQryExp = estabs_expected MinQryInt = estabs_submitted MinQryDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) MinQryExp = estabs_expected MinQryInt = estabs_submitted MinQryDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeMinQry.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==3
 insobs 1
-collapse (sum) ManufExp = estabs_expected ManufInt = estabs_submitted ManufDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) ManufExp = estabs_expected ManufInt = estabs_submitted ManufDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeManuf.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==4
 insobs 1
-collapse (sum) EWSExp = estabs_expected EWSInt = estabs_submitted EWSDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) EWSExp = estabs_expected EWSInt = estabs_submitted EWSDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeEWS.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==5
 insobs 1
-collapse (sum) ConsExp = estabs_expected ConsInt = estabs_submitted ConsDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) ConsExp = estabs_expected ConsInt = estabs_submitted ConsDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeCons.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==6
 insobs 1
-collapse (sum) Ser1Exp = estabs_expected Ser1Int = estabs_submitted Ser1Diff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) Ser1Exp = estabs_expected Ser1Int = estabs_submitted Ser1Diff = changed_qtype, by (Region  districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeSer1.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==7
 insobs 1
-collapse (sum) Ser2Exp = estabs_expected Ser2Int = estabs_submitted Ser2Diff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) Ser2Exp = estabs_expected Ser2Int = estabs_submitted Ser2Diff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeSer2.dta",replace
 *
 use "$tempsaveDir\Qtypechange.dta",clear
 keep if bus_sec_listing==8
 insobs 1
-collapse (sum) WRTExp = estabs_expected WRTInt = estabs_submitted WRTDiff = changed_qtype, by (Region District /*Team SupervisorName EnumeratorName*/ ResponsibleId)
+collapse (sum) WRTExp = estabs_expected WRTInt = estabs_submitted WRTDiff = changed_qtype, by (Region districtCode /*Team SupervisorName EnumeratorName*/ ResponsibleId)
 save "$tempsaveDir\QtypeWRT.dta",replace
 
 *Merging All change sectors
 use "$tempsaveDir\Qtypechange.dta",clear
-collapse (first) Team SuperName InterName, by (Region District ResponsibleId)
+collapse (first) Team SuperName InterName, by (Region  districtCode ResponsibleId)
 *use "$tempsaveDir\QtypeAgric.dta",clear
 merge 1:1 ResponsibleId  using "$tempsaveDir\QtypeAgric", nogenerate
 merge 1:1 ResponsibleId  using "$tempsaveDir\QtypeMinQry", nogenerate
@@ -493,17 +491,10 @@ replace `var' = 0 if missing(`var')
 }
 
 sort Team 
-order Region District Team InterName ResponsibleId AgricExp - WRTDiff SuperName
+order Region districtCode Team InterName ResponsibleId AgricExp - WRTDiff SuperName
 insobs 1
 save "$tempsaveDir\SectorChange.dta",replace
-export excel using "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Changed Sector") cell(A1) firstrow(variables) sheetreplace
-cap putexcel set "$dist_monitor_report_dir\IBES_monitor_report_`date'.xlsx", sheet("Changed Sector") modify
+export excel using "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Changed Sector") cell(A1) firstrow(variables) sheetreplace
+cap putexcel set "$excel_monitor_report_dir\IBES_monitor_report.xlsx", sheet("Changed Sector") modify
 cap putexcel (A1:AZ1), bold txtrotate(45)
-
-
-//   local progress = (100 / 100)
-local progress = 100
-file open progfile using "$tempsaveDir\progress.txt", write text replace
-file write progfile "`progress'"
-file close progfile
- 
+save "$stata_monitor_report_dir\change_sector.dta",replace
