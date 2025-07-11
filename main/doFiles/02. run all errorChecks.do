@@ -83,9 +83,10 @@ do "$do_file_errorSectionChecks_loc\SECTION 09 - PRODUCT INNOVATION.do"
 //
 //
 //
-// * SECTION 13 : FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION  *
-// *****************************************************
-// do "$do_file_errorSectionChecks_loc\SECTION 13 - FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION.do"
+
+* SECTION 13 : FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION  *
+ *****************************************************
+ do "$do_file_errorSectionChecks_loc\SECTION 13 - FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION.do"
 
 
  
