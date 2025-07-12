@@ -1,3 +1,5 @@
+//// MANUFACTURING ///
+***********************************************************
 * SECTION 13 - FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION
 * --------------------------------
 gl errorDataVars (section errorCheck errorMessage)		
@@ -113,7 +115,7 @@ replace error_flag = 1 if $zeroEmployeeSkillDifuser
 keep if error_flag == 1
 replace section = "Section 13" if $zeroEmployeeSkillDifuser
 replace errorCheck = "Inconsistent Response" if $zeroEmployeeSkillDifuser
-replace errorMessage =  "Q3. If response for 'employees have the skills to fuse knowledge' = '"+ s13q8_new +"', while total employees ='" + string(s2r1q1_employee_total)  + "'. Then, who are the employees you referring to?" if $zeroEmployeeSkillDifuser
+replace errorMessage =  "Q3.A. If response for 'employees have the skills to fuse knowledge' = '"+ s13q8_new +"', while total employees ='" + string(s2r1q1_employee_total)  + "'. Then, who are the employees you referring to?" if $zeroEmployeeSkillDifuser
  insobs 1
 save "$error_report\Section13_zeroEmployeeSkillDifuser.dta", replace
 
@@ -135,7 +137,7 @@ decode id17, generate(id17_new)
 replace error_flag = 1 if $nonRecordAudit
 replace section = "Section 13" if $nonRecordAudit
 replace errorCheck = "Inconsistence Response" if $nonRecordAudit 
-replace errorMessage = "Q1c. establishment with ownership type = '" + id17_new + "', answers that, regular conduct of technological audit of our company ='" + s13q3_new +  "' but if the establishment keep some form of record or accounts =  '" + s1q5_new +"'. This is not consistent" if $nonRecordAudit
+replace errorMessage = "Q1.C. establishment with ownership type = '" + id17_new + "', answers that, regular conduct of technological audit of our company ='" + s13q3_new +  "', but when asked 'if the establishment keep some form of record or accounts =  '" + s1q5_new +"'. This is not consistent" if $nonRecordAudit
 
 // keep $metaDataVars $errorDataVars
 insobs 1
@@ -156,7 +158,7 @@ keep if $smallfirmSizeDeparment
 replace error_flag = 1 if $smallfirmSizeDeparment
 replace section = "Section 13" if $smallfirmSizeDeparment
 replace errorCheck = "Inconsistence Response" if $smallfirmSizeDeparment 
-replace errorMessage = "Q3c. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a depertment for knowledge coordination within the establishment" if $smallfirmSizeDeparment
+replace errorMessage = "Q3.C. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a depertment for knowledge coordination within the establishment" if $smallfirmSizeDeparment
 
 insobs 1
 save "$error_report\Section13_smallFirmSizeForKnowledgeDepartment.dta", replace
@@ -176,7 +178,7 @@ keep if $smallfirmSizeDeparment
 replace error_flag = 1 if $smallfirmSizeDeparment
 replace section = "Section 13" if $smallfirmSizeDeparment
 replace errorCheck = "Inconsistence Response" if $smallfirmSizeDeparment 
-replace errorMessage = "Q3c. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a well-organized marketing department in an establishment" if $smallfirmSizeDeparment
+replace errorMessage = "Q4.A. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a well-organized marketing department in an establishment" if $smallfirmSizeDeparment
 
 insobs 1
 save "$error_report\Section13_smallFirmSizeForMarketingDepartment.dta", replace
@@ -199,7 +201,264 @@ keep if $newSalesNewProdError
 replace error_flag = 1 if $newSalesNewProdError
 replace section = "Section 13" if $newSalesNewProdError
 replace errorCheck = "Inconsistence Response" if $newSalesNewProdError 
-replace errorMessage = "Q4c. establishment answers that, 'there are commercialize products and services that are completely new to unit in your establishment' ='" + s13q13_new +  "'. but also says , establishment has increases in sales of new product in existing markets ='" +  s13q14_new+ "'" if $newSalesNewProdError
+replace errorMessage = "Q4.D. establishment answers that, 'there are commercialize products and services that are completely new to unit in your establishment' ='" + s13q13_new +  "'. but also says , establishment has increases in sales of new product in existing markets ='" +  s13q14_new+ "'" if $newSalesNewProdError
 
 insobs 1
 save "$error_report\Section13_newSalesNewProdError.dta", replace
+
+
+
+
+
+//// AGRIC /// Same but Variable names different because it comes as section 9
+***********************************************************
+
+
+* SECTION 9 - FIRM LEVEL CAPABILITIES, TRUST AND INTERACTION
+* --------------------------------
+gl errorDataVars (section errorCheck errorMessage)		
+gl firmIsCurrentlyAgric( $isAnySector & qtype == 1) //current sector is using the manufacturing Questionnaire
+
+**************************************************************************************************************
+* CHeck if firm has LEVEL CAPABILITIES Fields as Missing or has invalid values for Manufacturing Questionnaire
+**************************************************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+
+gl QueAnsBlank ($firmIsCurrentlyAgric & missing(value)) 
+gl QueAnsInvalid ($firmIsCurrentlyAgric & !missing(value) & !inrange(value,1,3)) 
+gl notExpectedToAns ($isAnySector & qtype != 1 & !missing(value))
+gl QueAnsInvalid_Missing ($QueAnsBlank | $QueAnsInvalid | $notExpectedToAns)
+
+
+keep if inlist(interview__status, 100,120 ,130)  & $firmIsCurrentlyAgric
+drop s13*
+
+foreach prefix in s9q1 s9q2 s9q3 s9q4 {
+    rename `prefix'ag frimCap_Q1_=`prefix'
+}
+
+foreach prefix in s9q5 s9q6 s9q7 {
+    rename `prefix'ag frimCap_Q2_=`prefix'
+}
+
+foreach prefix in s9q8 s9q9 s9q10 s9q11 {
+    rename `prefix'ag frimCap_Q3_=`prefix'
+}
+
+foreach prefix in s9q12 s9q13 s9q14 s9q15 {
+    rename `prefix'ag frimCap_Q4_=`prefix'
+}
+
+foreach prefix in s9q16 s9q17 s9q18 s9q19 s9q20 {
+    rename `prefix'ag frimCap_Q5_=`prefix'
+}
+
+generate id = _n
+reshape long frimCap_, i(id) j(varName) string
+ren frimCap_ value
+
+gen q_num = substr(varName, 1, strpos(varName, "_") - 1) if strpos(varName, "_") > 0
+gen sub_q_num =  real(substr(varName, strpos(varName, "gs9q")+length("gs9q"), .))
+
+replace sub_q_num = sub_q_num - 4 if q_num=="Q2"
+replace sub_q_num = sub_q_num - 7 if q_num=="Q3"
+replace sub_q_num = sub_q_num - 11 if q_num=="Q4"
+replace sub_q_num = sub_q_num - 15 if q_num=="Q5"
+
+gen varLetter = char(64 + (sub_q_num)) if inrange((sub_q_num), 1, 26)
+gen quesVar = q_num + "("+varLetter + ")."
+
+sort id varName q_num varName 
+
+replace error_flag = 1 if $QueAnsInvalid_Missing
+keep if error_flag == 1
+replace section = "Section 13" if $QueAnsInvalid_Missing
+replace errorCheck = "Invalid Response" if $QueAnsInvalid_Missing
+replace errorMessage =quesVar+  " cannot be blank" if $QueAnsBlank
+replace errorMessage =quesVar+  " response ='" + string(value) +  " is not expected for Non-Manufacturing Firm" if $notExpectedToAns
+
+replace errorMessage =quesVar +  " response ='" + string(value) + "' is invalid" if $QueAnsInvalid
+
+////
+//save the dataset
+keep if error_flag == 1 & !missing(id00)
+
+// keep $metaDataVars $errorDataVars
+insobs 1
+save "$error_report\Section13_invalid_MissingResponse.dta", replace
+* come back and fix the missing
+
+**********************************************************
+*  Too many Indifferent response for the whole section   *
+**********************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+gl manyIndifferenceResp (percentIndifferent >= 30) 
+
+keep if  $firmIsCurrentlyAgric
+
+drop s13*
+
+foreach prefix in s9q1 s9q2 s9q3 s9q4 {
+    rename `prefix'ag frimCap_Q1_=`prefix'
+}
+
+foreach prefix in s9q5 s9q6 s9q7 {
+    rename `prefix'ag frimCap_Q2_=`prefix'
+}
+
+foreach prefix in s9q8 s9q9 s9q10 s9q11 {
+    rename `prefix'ag frimCap_Q3_=`prefix'
+}
+
+foreach prefix in s9q12 s9q13 s9q14 s9q15 {
+    rename `prefix'ag frimCap_Q4_=`prefix'
+}
+
+foreach prefix in s9q16 s9q17 s9q18 s9q19 s9q20 {
+    rename `prefix'ag frimCap_Q5_=`prefix'
+}
+
+
+generate id = _n
+reshape long frimCap_, i(id) j(varName) string
+
+// s
+// gen quesNum = substr(varName, 1, strpos(varName, "_")- 1)
+//
+// gen qNumAlpha = real(substr(varName, strpos(varName, "gs9q")+length("gs9q"), .))
+//
+// replace qNumAlpha = qNumAlpha - 4 if quesNum=="Q2"
+// replace qNumAlpha = qNumAlpha - 7 if quesNum=="Q3"
+// replace qNumAlpha = qNumAlpha - 11 if quesNum=="Q4"
+// replace qNumAlpha = qNumAlpha - 15 if quesNum=="Q5"
+//
+// gen varLetter = char(64 + (qNumAlpha)) if inrange((qNumAlpha), 1, 26)
+// gen quesVar = quesNum + "("+varLetter + ")."
+//
+// drop varLetter quesNum qNumAlpha
+// s
+
+order interview__key interview__id id00 EstablishmentName Sub_Sector Region regCode District distCode EZ Estab_number StreetName Suburb ExactLocation Town Team Supervisor SupervisorContact EnumeratorName EnumContact qtype nav1__Latitude nav1__Longitude nav1__Accuracy nav1__Altitude nav1__Timestamp s00a_q08a s00a_q09a s00a_q10a s00a_q11a s00a_q11oth_a s00a_q08b s00a_q09b s00a_q10b s00a_q11b s00a_q11oth_b s00a_q11b1__Latitude s00a_q11b1__Longitude s00a_q11b1__Accuracy s00a_q11b1__Altitude s00a_q11b1__Timestamp s00a_q08c s00a_q09c s00a_q10c s00a_q11c s00a_q11oth_c s00a_q11b2__Latitude s00a_q11b2__Longitude s00a_q11b2__Accuracy s00a_q11b2__Altitude s00a_q11b2__Timestamp s00a_q12 s00a_q12oth s00a_q13__Latitude s00a_q13__Longitude s00a_q13__Accuracy s00a_q13__Altitude s00a_q13__Timestamp gpsAccuracy currentDate current_year current_month yearAgo_month_string id13a id13n id13p id13pb id13pc id13 id13b id13c id14 id14b id14c2 id14c id14c3 id15 id15b id15c id16 id16b id16c id17 id17b id17c id18 id18b id18bc id18c id18c1 id19 sssys_irnd has__errors interview__status assignment__id surveyStartDate todaySystemDate interview_date interview_date_num gps_date gps_date_num date_within_surveyPeriod section errorCheck errorMessage error_flag varName frimCap_
+
+collapse (count) indifferent = frimCap_ if frimCap_ == 2, by(id interview__key - error_flag)
+*total questions in S13 are 20
+gen percentIndifferent = indifferent /20 *100
+
+keep if $manyIndifferenceResp
+
+replace error_flag = 1 if $manyIndifferenceResp
+keep if error_flag == 1
+replace section = "Section 9" if $manyIndifferenceResp
+replace errorCheck = "Many Indifferent Response" if $manyIndifferenceResp
+replace errorMessage =  "Respondent gave '" + string(indifferent) +  "' out of 20 questions with response = 'Indifferent'. Having '"+ string(percentIndifferent) + "'% indifferent response for the whole of section-13 is not okay. Please probe respondent very well" if $manyIndifferenceResp
+ insobs 1
+save "$error_report\Section9_manyIndifferenceResponse.dta", replace
+
+********************************************************************************
+*   zero employees who have the skills to fuse or link newly acquired knowledge with existing knowledge   *
+********************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+gl zeroEmployeeSkillDifuser (s9q8ag==1 & s2r1q1_employee_total==0) 
+
+keep if  $firmIsCurrentlyAgric
+keep if $zeroEmployeeSkillDifuser
+
+decode s9q8ag, generate(s9q8ag_new)
+
+replace error_flag = 1 if $zeroEmployeeSkillDifuser
+keep if error_flag == 1
+replace section = "Section 9" if $zeroEmployeeSkillDifuser
+replace errorCheck = "Inconsistent Response" if $zeroEmployeeSkillDifuser
+replace errorMessage =  "Q3.A. If response for 'employees have the skills to fuse knowledge' = '"+ s9q8ag_new +"', while total employees ='" + string(s2r1q1_employee_total)  + "'. Then, who are the employees you referring to?" if $zeroEmployeeSkillDifuser
+ insobs 1
+save "$error_report\Section9_zeroEmployeeSkillDifuser.dta", replace
+
+********************************************************************************
+*   establishment does not keep records but can make regular technology audit  *
+********************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+
+keep if  $firmIsCurrentlyAgric
+
+gl nonRecordAudit (s1q5>1 & s9q3ag==1) 
+keep if $nonRecordAudit
+
+decode s9q3ag, generate(spq3ag_new)
+decode s1q5, generate(s1q5_new)
+decode id17, generate(id17_new)
+
+replace error_flag = 1 if $nonRecordAudit
+replace section = "Section 9" if $nonRecordAudit
+replace errorCheck = "Inconsistence Response" if $nonRecordAudit 
+replace errorMessage = "Q1.C. establishment with ownership type = '" + id17_new + "', answers that, regular conduct of technological audit of our company ='" + spq3ag_new +  "', but when asked 'if the establishment keep some form of record or accounts' =  '" + s1q5_new +"'. This is not consistent" if $nonRecordAudit
+
+// keep $metaDataVars $errorDataVars
+insobs 1
+save "$error_report\Section9_NoRecordKeeper_DoesTechAudit.dta", replace
+
+
+********************************************************************************
+*  Establishment with small employees but has knowledge-coordinating department 
+********************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+keep if $firmIsCurrentlyAgric
+decode id17, generate(id17_new)
+gl smallfirmSizeDeparment (s9q10ag == 1 & s2r1q1_persons_engaged_total < 5) 
+
+keep if $smallfirmSizeDeparment
+
+replace error_flag = 1 if $smallfirmSizeDeparment
+replace section = "Section 9" if $smallfirmSizeDeparment
+replace errorCheck = "Inconsistence Response" if $smallfirmSizeDeparment 
+replace errorMessage = "Q3.C. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a depertment for knowledge coordination within the establishment" if $smallfirmSizeDeparment
+
+insobs 1
+save "$error_report\Section9_smallFirmSizeForKnowledgeDepartment.dta", replace
+
+
+********************************************************************************
+*  Establishment has well-organized Marketing department but total persons engaged too small
+********************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+keep if $firmIsCurrentlyAgric
+decode id17, generate(id17_new)
+gl smallfirmSizeDeparment (s9q12ag == 1 & s2r1q1_persons_engaged_total < 5) 
+
+keep if $smallfirmSizeDeparment
+
+replace error_flag = 1 if $smallfirmSizeDeparment
+replace section = "Section 9" if $smallfirmSizeDeparment
+replace errorCheck = "Inconsistence Response" if $smallfirmSizeDeparment 
+replace errorMessage = "Q4.A. establishment with ownership type = '" + id17_new + "', answers that, total persons engages ='" + string(s2r1q1_persons_engaged_total) +  "'. This is too small to have a well-organized marketing department in an establishment" if $smallfirmSizeDeparment
+
+insobs 1
+save "$error_report\Section9_smallFirmSizeForMarketingDepartment.dta", replace
+
+
+********************************************************************************
+*  Cannot have increased sales of new product if there are no commercialised new products
+********************************************************************************
+use "$prepData\ibes_ii Estabs valid_dateCase_only.dta", clear
+keep if inlist(interview__status, 100,120 ,130) 
+keep if $firmIsCurrentlyAgric
+decode id17, generate(id17_new)
+decode s9q13ag, generate(s9q13ag_new)
+decode s9q14ag, generate(s9q14ag_new)
+
+gl newSalesNewProdError (s9q13ag > 1 & s9q14ag == 1) 
+
+keep if $newSalesNewProdError
+
+replace error_flag = 1 if $newSalesNewProdError
+replace section = "Section 9" if $newSalesNewProdError
+replace errorCheck = "Inconsistence Response" if $newSalesNewProdError 
+replace errorMessage = "Q4.D. If response to, 'there are commercialize products and services that are completely new to unit in your establishment' ='" + s9q13ag_new +  "'. but also says , 'establishment has increases in sales of new product in existing markets' ='" +  s9q14ag_new+ "'. This is inconsistent" if $newSalesNewProdError
+
+insobs 1
+save "$error_report\Section13_newSalesNewProdError.dta", replace
+
